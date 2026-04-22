@@ -1,0 +1,12 @@
+{
+  "name": "Aura Weather",
+  "description": "A comprehensive weather forecasting application with AI-powered travel advice, global alerts, and lifestyle indices.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "weather_forecasting",
+    "ai_insights",
+    "location_services"
+  ]
+}
