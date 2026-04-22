@@ -19,7 +19,11 @@ import {
   Map as MapIcon,
   ShoppingBag,
   Bike,
-  Activity
+  Activity,
+  Calendar,
+  TrendingUp,
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { enUS, zhCN, zhTW } from 'date-fns/locale';
@@ -614,6 +618,97 @@ export default function App() {
           </div>
       </main>
 
+      {/* Weather Almanac - Integrated Calendar */}
+      <section className="max-w-4xl mx-auto space-y-8 py-12">
+         <div className="flex items-end justify-between gap-4">
+            <div className="space-y-1">
+               <h3 className="text-4xl font-serif italic tracking-tight">{t.weatherCalendar}</h3>
+               <p className={cn("text-[10px] font-black uppercase tracking-[0.3em]", theme.muted)}>Your weather-synced schedule</p>
+            </div>
+            <div className={cn("hidden sm:flex items-center gap-4 p-4 rounded-3xl border shadow-sm", theme.glass)}>
+               <div className="flex -space-x-3">
+                  {[1, 2, 3].map(i => (
+                     <div key={i} className={cn("w-8 h-8 rounded-full border-2 border-white dark:border-zinc-900 bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-[8px] font-bold overflow-hidden")}>
+                        <Sparkles className="w-4 h-4 opacity-30" />
+                     </div>
+                  ))}
+               </div>
+               <span className="text-[10px] font-bold uppercase tracking-widest leading-none opacity-60 text-emerald-500">{t.optimizedSchedule}</span>
+            </div>
+         </div>
+
+         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            {data?.daily.time.slice(0, 7).map((date, i) => {
+               const isToday = i === 0;
+               const uv = data.daily.uvIndexMax[i];
+               const code = data.daily.weatherCode[i];
+               const tMax = data.daily.tempMax[i];
+               
+               // Dynamic Vibe/Productivity Calculation
+               let score = 90;
+               if (tMax > 32) score -= 20;
+               if (tMax < 5) score -= 15;
+               if ([51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(code)) score -= 35;
+               if (uv > 7) score -= 10;
+               
+               return (
+                  <GlassCard 
+                    key={date}
+                    onClick={() => handleLifeCardClick({ id: 'calendar', date, icon: <Calendar />, title: format(new Date(date), 'MMM d'), color: 'emerald' })}
+                    className={cn(
+                      "p-6 flex flex-col items-center justify-between min-h-[220px] transition-all duration-500 cursor-pointer group hover:scale-[1.03] active:scale-95 relative overflow-hidden", 
+                      isToday ? "border-emerald-500/40 ring-4 ring-emerald-500/5 ring-inset shadow-emerald-500/10" : "",
+                      theme.glass
+                    )}
+                  >
+                     {/* Background Number */}
+                     <div className="absolute top-2 right-4 text-4xl font-serif italic font-black opacity-[0.03] group-hover:opacity-[0.07] transition-opacity select-none">
+                        {format(new Date(date), 'd')}
+                     </div>
+
+                     <div className="text-center space-y-1 relative z-10 w-full">
+                        <p className={cn("text-[9px] font-black uppercase tracking-[0.2em]", theme.muted)}>
+                          {format(new Date(date), 'eee', { locale: getDateLocale() })}
+                        </p>
+                        <p className={cn("text-2xl font-serif italic", isToday ? "text-emerald-500" : theme.text)}>
+                          {format(new Date(date), 'd')}
+                        </p>
+                     </div>
+
+                     <div className="my-6 relative z-10 group-hover:rotate-12 transition-transform duration-500">
+                        <WeatherIcon code={code} className="w-10 h-10" />
+                     </div>
+
+                     <div className="w-full space-y-4 pt-4 border-t border-black/5 dark:border-white/5 relative z-10">
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col">
+                             <span className={cn("text-[8px] font-black uppercase tracking-widest opacity-40", theme.muted)}>Vibe</span>
+                             <span className={cn("text-[10px] font-bold font-serif italic truncate", 
+                               score > 80 ? "text-emerald-500" : score > 50 ? "text-amber-500" : "text-rose-500")}>
+                               {score > 80 ? 'Peak' : score > 60 ? 'Optimal' : score > 40 ? 'Steady' : 'Careful'}
+                             </span>
+                          </div>
+                          <div className="flex flex-col items-end">
+                             <span className={cn("text-[8px] font-black uppercase tracking-widest opacity-40", theme.muted)}>Max</span>
+                             <span className="text-xs font-bold">{tMax}°</span>
+                          </div>
+                        </div>
+                        
+                        <div className="h-1 w-full bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
+                           <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: `${Math.max(15, score)}%` }}
+                             className={cn("h-full rounded-full", 
+                               score > 80 ? "bg-emerald-500" : score > 50 ? "bg-amber-500" : "bg-rose-500")}
+                           />
+                        </div>
+                     </div>
+                  </GlassCard>
+               );
+            })}
+         </div>
+      </section>
+
       {/* Featured Section */}
       <section className="max-w-4xl mx-auto space-y-12 py-8">
          <div className="flex items-center gap-6">
@@ -858,6 +953,44 @@ export default function App() {
                         <Markdown>{lifeAdvice || 'Suggesting...'}</Markdown>
                       </div>
                     </motion.div>
+                  )}
+
+                  {activeLifeCategory.id === 'calendar' && (
+                    <div className="space-y-4">
+                       <div className={cn("p-6 rounded-3xl border flex items-center justify-between", theme.glass)}>
+                          <div className="flex items-center gap-4">
+                             <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl">
+                                <TrendingUp className="w-6 h-6" />
+                             </div>
+                             <div>
+                                <p className={cn("text-[10px] font-black uppercase tracking-widest", theme.muted)}>AI Scheduling Agent</p>
+                                <p className={cn("text-lg font-serif italic", theme.text)}>Active & Optimizing</p>
+                             </div>
+                          </div>
+                          <Sparkles className="w-5 h-5 text-emerald-500 animate-pulse" />
+                       </div>
+                       
+                       <div className="space-y-3">
+                          {[
+                            { time: '07:00 - 09:00', task: 'Outdoor Exercise', icon: <Activity className="w-4 h-4" />, status: 'Optimal' },
+                            { time: '10:00 - 15:00', task: 'Deep Work / Indoor', icon: <Clock className="w-4 h-4" />, status: 'High Focus' },
+                            { time: '16:00 - 18:00', task: 'Leisure / Commute', icon: <ChevronRight className="w-4 h-4" />, status: 'Steady' }
+                          ].map((item, idx) => (
+                            <div key={idx} className={cn("p-4 rounded-2xl border flex items-center justify-between group hover:border-emerald-500/30 transition-all", theme.glass)}>
+                               <div className="flex items-center gap-4">
+                                  <div className={cn("p-2 rounded-lg opacity-40 group-hover:opacity-100 transition-opacity", theme.isDark ? "bg-white/5" : "bg-black/5")}>
+                                     {item.icon}
+                                  </div>
+                                  <div>
+                                     <p className={cn("text-[8px] font-black uppercase tracking-tighter", theme.muted)}>{item.time}</p>
+                                     <p className={cn("text-xs font-bold", theme.text)}>{item.task}</p>
+                                  </div>
+                               </div>
+                               <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500 opacity-60">{item.status}</span>
+                            </div>
+                          ))}
+                       </div>
+                    </div>
                   )}
 
                   {activeLifeCategory.id === 'carwash' && (

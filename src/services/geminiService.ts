@@ -40,7 +40,7 @@ export async function getAIWeatherAdvice(data: WeatherData, lang: Language = 'en
 }
 
 export async function getLifestyleAdvice(
-  category: 'dressing' | 'workout' | 'uv' | 'carwash',
+  category: 'dressing' | 'workout' | 'uv' | 'carwash' | 'calendar',
   data: WeatherData,
   lang: Language = 'en'
 ): Promise<string> {
@@ -50,7 +50,8 @@ export async function getLifestyleAdvice(
     dressing: 'dressing index and specific outfit recommendations (indoor/outdoor)',
     workout: 'exercise advice and intensity recommendations based on air quality and temp',
     uv: 'UV protection and skincare recommendations',
-    carwash: 'car washing feasibility and dust forecast'
+    carwash: 'car washing feasibility and dust forecast',
+    calendar: 'weather-optimized scheduling advice for the day (outdoor activities vs indoor productivity)'
   };
 
   const prompt = `
